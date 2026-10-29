@@ -1,4 +1,4 @@
-from langchain.messages import AIMessage, HumanMessage, SystemMessage 
+from langchain.messages import AIMessage, HumanMessage, SystemMessage
 
 messages = [
     SystemMessage(content="Responde en español y paso a paso."),
