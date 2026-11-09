@@ -15,3 +15,4 @@ class ConversationState(TypedDict):
     category: str # Guarda la categoría más reciente.
     employee_id: str # Identifica al empleado
     profile: dict # Guarda el perfil cargado para esta ejecución.
+    authorized: bool # Conserva la autorización más reciente.
