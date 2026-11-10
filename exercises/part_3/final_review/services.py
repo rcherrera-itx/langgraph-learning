@@ -2,7 +2,6 @@
 
 from langchain_core.tools import tool
 
-
 TICKET_ACCESS: dict[str, set[str]] = {
     "INC-4471": {"EMP-001"}
 }
