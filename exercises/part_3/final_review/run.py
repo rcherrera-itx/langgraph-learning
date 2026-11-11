@@ -6,17 +6,14 @@ from uuid import uuid4
 # Representa las preguntas escritas por el usuario.
 from langchain_core.messages import HumanMessage
 
-# Conserva el estado de cada conversación durante esta ejecución.
-from langgraph.checkpoint.memory import InMemorySaver
-
-# Permite compartir perfiles entre conversaciones durante esta ejecución.
-from langgraph.store.memory import InMemoryStore
-
 # Permite reanudar un grafo que solicitó una decisión humana.
 from langgraph.types import Command
 
 # Importa el constructor del grafo.
 from .graph import build_graph
+
+# Abre los almacenes SQLite durante toda la sesión de consola.
+from .persistence import open_storage
 
 # Define los usuario disponibles en esta simulación.
 EMPLOYEES = {"EMP-001", "EMP-002"}
@@ -144,17 +141,8 @@ def stream_turn(graph, graph_input: dict, config: dict) -> dict | None:
         current_input = Command(resume=decision)
 
 
-def main() -> None:
-    """Mantiene una conversación y envía cada mensaje nuevo al grafo."""
-
-    # Crea el almacenamiento de los estados de las conversaciones.
-    checkpointer = InMemorySaver()
-
-    # Crea el almacenamiento de perfiles que utilizará 'load_profile'.
-    store = InMemoryStore()
-
-    # Construye el grafo una sola vez co ambos almacenamientos.
-    graph = build_graph(checkpointer=checkpointer, store=store)
+def run_chat(graph) -> None:
+    """Atiende comandos y mensajes mientras los almacenes están abiertos."""
 
     # Selecciona el empleado que comenzará a usar la consola.
     employee_id = choose_employee()
@@ -189,6 +177,11 @@ def main() -> None:
             print("Hasta luego.")
             break
 
+        # Repite el identificador si el empleado desea guardarlo.
+        if user_input.lower() == "/id":
+            print(f"Conversación: {thread_id}")
+            continue
+
         # Abre otra conversación del usuario activo.
         if user_input.lower() == "/new":
             thread_id = create_thread_id(employee_id)
@@ -213,8 +206,64 @@ def main() -> None:
             # Inicia una conversación nueva para el empleado seleccionado.
             thread_id = create_thread_id(employee_id)
             is_new_thread = True
-            print(f"Conversación iniciada para {employee_id}.")
+            print(f"Conversación iniciada para {employee_id}: {thread_id}.")
             continue
+
+        # Recupera un hilo conocido desde el checkpointer persistente.
+        if user_input.lower().startswith("/resume"):
+
+            # Exige el identificador completo mostrado por '/id' o '/new'
+            parts = user_input.split()
+            if len(parts) != 2 or parts[0].lower() != "/resume":
+                print("Uso: /resume EMP-00X:identificador")
+                continue
+
+            # Impide seleccionar un hilo que pertenezca a otro empleado.
+            candidate_id = parts[1]
+            if not candidate_id.startswith(f"{employee_id}"):
+                print("La conversación no pertenece al empleado seleccionado.")
+                continue
+
+            # Consulta el estado guardado sin modificar la conversación activa.
+            candidate_config = {"configurable": {"thread_id": candidate_id}}
+            snapshot = graph.get_state(candidate_config)
+
+            # Comprueba que el hilo exista y confirme su propietario en el estado.
+            if not snapshot.values or snapshot.values.get("employee_id") != employee_id:
+                print("No existe una conversación guardada con ese identificador.")
+                continue
+
+            # Un paso pendiente distinto de la aprobaci+on no se renuda a ciegas.
+            if snapshot.next and not snapshot.interrupts:
+                print("La conversación tiene un paso pendiente que requiere revisión.")
+                continue
+
+            # Selecciona el hilo recuperado y conserva su estado previo.
+            thread_id = candidate_id
+            is_new_thread = False
+            print(f"Conversación recuperada: {thread_id}")
+            print(f"Mensajes guardados: {len(snapshot.values['messages'])}")
+
+            # Una aprobación pendiente conserva su solicitud en el checkpointer.
+            if snapshot.interrupts:
+                review_request = snapshot.interrupts[0].value
+                decision = read_review_decision(review_request)
+
+                # Al cerrar la entrada, el hilo seguirá pendiente en SQLite.
+                if decision is None:
+                    print("La revisión permanece pendiente. Sesión terminada.")
+                    return
+
+                # Reanuda exactamente el hilo y la solicitud interrumpidos.
+                result = stream_turn(graph, Command(resume=decision), candidate_config)
+                if result is None:
+                    print("La revisión permanece pendiente. Sesión terminada.")
+                    return
+
+                # Presenta el resultado del turno que había quedado pausado.
+                print(f"Asistente: {result['messages'][-1].content}")
+            continue
+
 
         # Evita un comando no reconocido.
         if user_input.startswith("/"):
@@ -264,6 +313,20 @@ def main() -> None:
 
         # Presenta la respuesta al usuario en la consola.
         print(f"Asistente: {final_message.content}")
+
+
+def main() -> None:
+    """Mantiene los almacenes abiertos hhasta que termina la consola."""
+
+    # Cierra ambas conexiones incluso si se termina con '/quit' o 'Ctrl+C'.
+    with open_storage() as (checkpointer, store):
+        # El grafo usa el checkpointer por hilo y el store por empleado.
+        graph = build_graph(checkpointer=checkpointer, store=store)
+
+        # Atiende mensajes mientars el grafo puede acceder a sus almacenes.
+        run_chat(graph)
+
+    
 
 # Inicia la interfaz únicamente al ejecutar este módulo.
 if __name__ == "__main__":
