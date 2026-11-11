@@ -6,6 +6,9 @@ from langgraph.graph import END, START, StateGraph
 # Permite ejecutar herramientas solicitadas mediante 'tool_calls'
 from langgraph.prebuilt import ToolNode
 
+# Importa los nodos que revisan y ejecutan restablecimientos.
+from .approval import approval_gate, execute_reset
+
 # Importa los nodos y las funciones que deciden las rutas.
 from .nodes import (
     authorize_ticket,
@@ -18,7 +21,7 @@ from .nodes import (
     route_by_category,
 )
 
-# Importa el nodo que recupera el perfil desde el store.
+# Importa los nodos que cargan y guardan el perfil del empleado.
 from .profiles import load_profile, save_profile
 
 # Importa la herramienta que consulta el estado de un ticket.
@@ -32,7 +35,7 @@ from .state import ConversationState
 
 
 def build_graph(checkpointer=None, store=None):
-    """Construye el grafo con alamcenamiento opciona para estado y perfiles."""
+    """Construye el grafo con almcenamiento opcional para estado y perfiles."""
 
     # Crea una instancia del modelo simulado para el nodo de TI.
     model = SimulatedModel()
@@ -50,13 +53,17 @@ def build_graph(checkpointer=None, store=None):
     builder.add_node("classify", classify)
 
     # Registra el nodo que responde solicitudes de Recursos Humanos.
-    builder.add_node("hr_agent", make_specialist("Respuesta simulada de Recursos Humanos"))
+    builder.add_node(
+        "hr_agent", make_specialist("Respuesta simulada de Recursos Humanos")
+    )
 
     # Registra el nodo de TI que puede solicitar una herramienta o responder.
     builder.add_node("it_agent", make_it_agent(model))
 
     # Registra el nodo que responde solicitudes generales.
-    builder.add_node("general_agent", make_specialist("Respuesta simulada de atención general"))
+    builder.add_node(
+        "general_agent", make_specialist("Respuesta simulada de atención general")
+    )
 
     # Registra el nodo que comprueba el permiso antes de consultar un ticket.
     builder.add_node("authorize_ticket", authorize_ticket)
@@ -66,6 +73,12 @@ def build_graph(checkpointer=None, store=None):
 
     # Registra el nodo que comunica la denegación sin ejecutar la herramienta,
     builder.add_node("deny_ticket", deny_ticket)
+
+    # Registra el nodo que pausa el grafo para pedir una decisión humana.
+    builder.add_node("approval_gate", approval_gate)
+
+    # Registra el nodo que realiza un restablecimiento aprobado.
+    builder.add_node("execute_reset", execute_reset)
 
     # Inicia cada ejecucuión cargabdo el perfil del usuario.
     builder.add_edge(START, "load_profile")
@@ -91,23 +104,22 @@ def build_graph(checkpointer=None, store=None):
     for agent in ("hr_agent", "general_agent"):
         builder.add_edge(agent, END)
 
-    # Si IT solicitó una herramienta, continúa con la autorización.
-    # Si IT ya produjo una respuesta final, etermina la ejecución.
+    # Selecciona el tratamiento de la respuesta producida por IT.
     builder.add_conditional_edges(
         "it_agent",
         route_after_it,
-        {"authorize": "authorize_ticket", "finish": END},
+        {
+            "authorize": "authorize_ticket",
+            "review_reset": "approval_gate",
+            "finish": END,
+        },
     )
 
-    # Envía las solicitudes autorizadas a la herramienta.
-    # Envía las solicitudes denegadas al nodo que registra la denegación.
+    # Según la decisión de la aplicación, consulta o deniega el ticket.
     builder.add_conditional_edges(
         "authorize_ticket",
         route_after_authorization,
-        {
-            "allowed": "it_tools",
-            "denied": "deny_ticket"
-        }
+        {"allowed": "it_tools", "denied": "deny_ticket"},
     )
 
     # Tras ejecutar la herramienta, IT interpreta su ToolMessage.
@@ -115,6 +127,12 @@ def build_graph(checkpointer=None, store=None):
 
     # Tras registrar la denegación, IT redacta la respuesta al usuario.
     builder.add_edge("deny_ticket", "it_agent")
+
+    # Permite a IT interpretar el resultado de un restablecimiento aprobado.
+    builder.add_edge("execute_reset", "it_agent")
+
+    # 'approval_gate' elige su destino mediante Command(goto=...)
+    # Por eso no se le añade una arista estética.
 
     # Compila el grafo con el checkpointer recibido.
     return builder.compile(checkpointer=checkpointer, store=store)

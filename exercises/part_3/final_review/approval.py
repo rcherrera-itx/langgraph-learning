@@ -77,10 +77,6 @@ def approval_gate(
         raise ValueError("La decisión del revisor no es válida.")
 
     # Registra una denegación ligada a la llamada original del modelo.
-    if decision != "deny":
-        raise ValueError("La decisión del revisor no es válida.")
-
-    # Registra una denegación ligada a la llamada original del modelo.
     denial = ToolMessage(
         content="DENIED: La acción fue denegada por el revisor.",
         tool_call_id=call["id"],

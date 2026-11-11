@@ -25,6 +25,10 @@ def classify(state: ConversationState) -> dict:
     # Lee el último mensaje, que al comenzar este recorrido es la nuva solicitud.
     text = str(state["messages"][-1].content).casefold()
 
+    # Dirige una solicitud de contraseña a IT para su revisión posterior.
+    if "restablec" in text and "ccontraseña" in text:
+        return {"category": "it"}
+
     # Dirige las preguntas sobre vacaciones a Recursos Humanos.
     if "vacaciones" in text:
         return {"category": "hr"}
@@ -87,8 +91,15 @@ def route_after_it(state: ConversationState) -> Literal["authorize", "finish"]:
     # Consulta el mensaje que acaba de producir el modelo.
     last_message = state["messages"][-1]
 
-    # Solicita autorización antes de ejecutar una herramienta.
+    # Una solicitud de herramienta necesita un paso adicional.
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
+        # Envía el restablecimiento a la revisión humana.
+        # 'approval.py' validará la estructura completa de esa solicitud.
+        if last_message.tool_calls[0].get("name") == "reset_password":
+            return "review_reset"
+
+        # Envía la consulta de ticket a la política de autorizaión.
+        # El servicio validará la llamada antes de permitir 'lookup_ticket'
         return "authorize"
 
     # Termina cuando el modelo ya devolvió una respuesta normal.
