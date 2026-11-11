@@ -19,7 +19,7 @@ from .nodes import (
 )
 
 # Importa el nodo que recupera el perfil desde el store.
-from .profiles import load_profile
+from .profiles import load_profile, save_profile
 
 # Importa la herramienta que consulta el estado de un ticket.
 from .services import lookup_ticket
@@ -43,6 +43,9 @@ def build_graph(checkpointer=None, store=None):
     # Registra el nodo que carga el perfil del empleado.
     builder.add_node("load_profile", load_profile)
 
+    # Registra el nodo que guarda un modelo de laptop informado.
+    builder.add_node("save_profile", save_profile)
+
     # Registra el nodo que clasifica la solicitud.
     builder.add_node("classify", classify)
 
@@ -64,11 +67,14 @@ def build_graph(checkpointer=None, store=None):
     # Registra el nodo que comunica la denegación sin ejecutar la herramienta,
     builder.add_node("deny_ticket", deny_ticket)
 
-    # Inicia cada ejecucuión cargabdo el perfil.
+    # Inicia cada ejecucuión cargabdo el perfil del usuario.
     builder.add_edge(START, "load_profile")
 
-    # Ejecuta la clasificación despúes de cargar el perfil.
-    builder.add_edge("load_profile", "classify")
+    # Examina si el mensaje nuevo informa un modelo que debe guardarse.
+    builder.add_edge("load_profile", "save_profile")
+
+    # Clasifica la solicitud despúes de actualizar el perfil si corresponde..
+    builder.add_edge("save_profile", "classify")
 
     # Convierte la categoría devuelta en el nombre del nodo especializado.
     builder.add_conditional_edges(
