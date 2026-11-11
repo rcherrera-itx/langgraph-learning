@@ -26,7 +26,7 @@ def classify(state: ConversationState) -> dict:
     text = str(state["messages"][-1].content).casefold()
 
     # Dirige una solicitud de contraseña a IT para su revisión posterior.
-    if "restablec" in text and "ccontraseña" in text:
+    if "restablec" in text and "contraseña" in text:
         return {"category": "it"}
 
     # Dirige las preguntas sobre vacaciones a Recursos Humanos.
