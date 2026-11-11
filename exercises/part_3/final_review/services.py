@@ -74,14 +74,14 @@ def authorize_ticket_requests(employee_id: str, tool_calls: list[dict]) -> bool:
     """Autoriza un turno que contiene una sola consulta del ticket."""
 
     # Esta ruta admite una sola llamada para poder resolverla por completo.
-    if not isinstance(tool_calls, dict) or len(tool_calls) != 1:
+    if not isinstance(tool_calls, list) or len(tool_calls) != 1:
         return False
 
     # Valida esa llamada y permiso del usuario.
     return authorize_ticket_call(employee_id, tool_calls[0])
 
 
-def rest_password(employee_id: str, request_id: str) -> str:
+def reset_password(employee_id: str, request_id: str) -> str:
     """Realiza una sola vez cada restablecimiento simulado."""
 
     # Comprueba que la acción se dirija a un empleado de la simulación.

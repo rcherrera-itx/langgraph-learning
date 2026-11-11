@@ -12,11 +12,15 @@ from langgraph.checkpoint.memory import InMemorySaver
 # Permite compartir perfiles entre conversaciones durante esta ejecución.
 from langgraph.store.memory import InMemoryStore
 
+# Permite reanudar un grafo que solicitó una decisión humana.
+from langgraph.types import Command
+
 # Importa el constructor del grafo.
 from .graph import build_graph
 
 # Define los usuario disponibles en esta simulación.
 EMPLOYEES = {"EMP-001", "EMP-002"}
+
 
 def create_thread_id(employee_id: str) -> str:
     """Crea un identificador nuevo para una conversación del empleado."""
@@ -40,6 +44,29 @@ def choose_employee() -> str:
 
         # Responde el por qué se solicita el identificador nuevamente.
         print("El usuario no está disponible en la simulación.")
+
+
+def read_review_decision(request: object) -> str | None:
+    """Muestra una acción pendiente y recoge la decisión del revisor."""
+
+    # Presenta la solicitud que provocó la pausa del grafo.
+    print("Solicitud de revisión:", request)
+
+    # Solicita una decisión explícita antes de reanudar.
+    while True:
+        try:
+            # Acepta las dos decisiones que entenderá el nodo de aprobación.
+            decision = input("Revisor (approve/deny): ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            # Deja la acción sin ejecutar si se cierra la entrada.
+            print()
+            return None
+
+        # Devuelve únicamente una decisión reconocida.
+        if decision in {"approve", "deny"}:
+            return decision
+
+        print("Escribe approve or deny.")
 
 
 def main() -> None:
@@ -146,6 +173,24 @@ def main() -> None:
 
         # Ejecuta el grafo con el mensaje nuevo y el estado correspondiente.
         result = graph.invoke(graph_input, config=config)
+
+        # Atiende una interrupción antes de mostrar una respuesta final.
+        while "__interrupt__" in result:
+
+            # Obtiene los datos que el nodo envió al revisor.
+            request = result["__interrupt__"][0].value
+
+            # Pide una decisión sobre esa solicitud concreta.
+            decision = read_review_decision(request)
+
+            # Sale in ejecutar la acción si no se recibió una decisión.
+            if decision is None:
+                print("La acción no se ejecutó. Sesión terminada.")
+                return
+
+            # Reanuda la misma conversación con la decisión del revisor.
+            result = graph.invoke(Command(resume=decision), config=config)
+
 
         # Marca que la conversación actual ya tiene estado en el checkpointer.
         is_new_thread = False
