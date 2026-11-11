@@ -168,6 +168,9 @@ def main() -> None:
                 "authorized": False,
             }
 
+        # Identifica esta solicitud concreta, incluso si pertenece a un hilo existente.
+        graph_input["request_id"] = uuid4().hex
+
         # Selecciona el historial identificado por el 'thread_id' activo.
         config = {"configurable": {"thread_id": thread_id}}
 
