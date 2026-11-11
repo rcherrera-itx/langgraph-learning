@@ -23,13 +23,13 @@ EMPLOYEES = {"EMP-001", "EMP-002"}
 
 # Asocia cada nodo con un mensaje de progreso para la consola.
 PROGRESS_LABELS = {
-    "load_profiles": "Perfil cargado.",
+    "load_profile": "Perfil cargado.",
     "save_profile": "Perfil revisado.",
     "classify": "Solicitud clasificada.",
     "hr_agent": "Recursos Humanos procesó la solicitud.",
     "it_agent": "IT procesó un paso.",
     "general_agent": "Atención general procesó la solicitud.",
-    "authotize_ticket": "Permiso de consulta evaluado.",
+    "authorize_ticket": "Permiso de consulta evaluado.",
     "it_tools": "Consulta de ticket completada.",
     "deny_ticket": "Consulta de ticket denegada.",
     "approval_gate": "Decisión del revisor registrada.",
@@ -255,9 +255,6 @@ def main() -> None:
         if result is None:
             print("La acción no se ejecutó. Sesión terminada.")
             return
-
-        # Ejecuta el grafo con el mensaje nuevo y el estado correspondiente.
-        result = graph.invoke(graph_input, config=config)
 
         # Marca que la conversación actual ya tiene estado en el checkpointer.
         is_new_thread = False
