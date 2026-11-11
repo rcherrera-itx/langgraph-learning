@@ -81,7 +81,7 @@ def read_review_decision(request: object) -> str | None:
         print("Escribe 'approve' or 'deny'.")
 
 
-def stream_turn(graph, graph_input: dict, config: dict) -> dict | None:
+def stream_turn(graph, graph_input: dict | Command, config: dict) -> dict | None:
     """Muestra avances, atiende pausas y devuelve el estado final del turno."""
 
     # La primera ejecución recibe el mensaje nuevo del empleado.
@@ -153,8 +153,9 @@ def run_chat(graph) -> None:
     # Indica que esa conversación aún no tiene estado inicial guardado.
     is_new_thread = True
 
-    # Muestra los comandos disponibles en esta versión.
-    print("Comandos: /new, /switch EMP-001, /switch EMP-002, /quit")
+    # Muestra el identificador recuperable y los comandos disponibles en esta versión.
+    print(f"Conversación: {thread_id}")
+    print("Comandos: /id, /new, /resume THREAD_ID, /switch EMP-001, /switch EMP-002, /quit")
 
     # Recibe mensajes sucesivos sin reconstruir el grafo.
     while True:
@@ -186,7 +187,7 @@ def run_chat(graph) -> None:
         if user_input.lower() == "/new":
             thread_id = create_thread_id(employee_id)
             is_new_thread = True
-            print("Nueva conversación iniciada.")
+            print(f"Nueva conversación: {thread_id}")
             continue
 
         # Permite simular la selección de otro empleado.
@@ -206,7 +207,7 @@ def run_chat(graph) -> None:
             # Inicia una conversación nueva para el empleado seleccionado.
             thread_id = create_thread_id(employee_id)
             is_new_thread = True
-            print(f"Conversación iniciada para {employee_id}: {thread_id}.")
+            print(f"Conversación iniciada para {employee_id}: {thread_id}")
             continue
 
         # Recupera un hilo conocido desde el checkpointer persistente.
@@ -220,7 +221,7 @@ def run_chat(graph) -> None:
 
             # Impide seleccionar un hilo que pertenezca a otro empleado.
             candidate_id = parts[1]
-            if not candidate_id.startswith(f"{employee_id}"):
+            if not candidate_id.startswith(f"{employee_id}:"):
                 print("La conversación no pertenece al empleado seleccionado.")
                 continue
 

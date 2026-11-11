@@ -1,10 +1,9 @@
 """Abre el almacenamiento local persistente para conversaciones y perfiles."""
 
 # Permite mantener abiertas ambas conexiones durante la vida del chatbot.
-from contextlib import contextmanager
-
 # Describe el tipo de valor que entrega el administrador de contexto.
 from collections.abc import Iterator
+from contextlib import contextmanager
 
 # Construye rutas independientes del directorio desde donde se ejecua Python.
 from pathlib import Path
