@@ -3,14 +3,14 @@
 # Cierra la conexión SQLite cuando termina la operación.
 from contextlib import closing
 
-# Registra restablecimientos con una clave única que sobrevive a reinicios.
-import sqlite3
-
 # Convierte una función en herramienta para el ToolNode de tickets.
 from langchain_core.tools import tool
 
 # Comparte con el chatbot la ubicación de sus archivos persistentes.
 from .persistence import DATA_DIR
+
+# Registra restablecimientos con una clave única que sobrevive a reinicios.
+import sqlite3
 
 # Define qué empleados pueden consultar cada ticket de la simulación.
 TICKET_ACCESS: dict[str, set[str]] = {"INC-4471": {"EMP-001"}}
