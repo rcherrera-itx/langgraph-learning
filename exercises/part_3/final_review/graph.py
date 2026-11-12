@@ -132,7 +132,7 @@ def build_graph(checkpointer=None, store=None):
     builder.add_edge("execute_reset", "it_agent")
 
     # 'approval_gate' elige su destino mediante Command(goto=...)
-    # Por eso no se le añade una arista estética.
+    # Por eso no se añade una arista estética desde este nodo.
 
-    # Compila el grafo con el checkpointer recibido.
+    # Compila el grafo con el checkpointer y el store recibido.
     return builder.compile(checkpointer=checkpointer, store=store)

@@ -3,7 +3,7 @@
 # Describe el tipo de función que crea 'make_it_agent'.
 from collections.abc import Callable
 
-# Limita las claves de ruta esperadas para facilitar su revisión.
+# Declara las claves de ruta esperadas para el análisis estático; Literal no las valida en ejecución.
 from typing import Literal
 
 # representa respuestas del asistente y resultados de herramientas.
@@ -85,7 +85,7 @@ def make_it_agent(model: SimulatedModel) -> Callable[[ConversationState], dict]:
     return it_agent
 
 
-def route_after_it(state: ConversationState) -> Literal["authorize", "review_reset" ,"finish"]:
+def route_after_it(state: ConversationState) -> Literal["authorize", "review_reset", "finish"]:
     """Decide si IT pidió una herramienta o terminó de responder."""
 
     # Consulta el mensaje que acaba de producir el modelo.

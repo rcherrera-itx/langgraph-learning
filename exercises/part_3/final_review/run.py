@@ -84,7 +84,7 @@ def read_review_decision(request: object) -> str | None:
 def stream_turn(graph, graph_input: dict | Command, config: dict) -> dict | None:
     """Muestra avances, atiende pausas y devuelve el estado final del turno."""
 
-    # La primera ejecución recibe el mensaje nuevo del empleado.
+    # El primer recorrido recibe un mensaje nuevo o una decisión para renudar el hilo.
     current_input = graph_input
 
     # Permite reanudar una o más interrupciones del mismo turno.

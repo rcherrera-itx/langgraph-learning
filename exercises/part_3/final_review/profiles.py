@@ -39,7 +39,7 @@ def extract_laptop_model(content: str) -> str | None:
 
 
 def load_profile(state: ConversationState, runtime: Runtime) -> dict:
-    """Carga al estado actual si el grafo no tiene un store asociado."""
+    """Carga el perfil del empleado desde el store cuando está disponible."""
 
     # Conserva el estado actual si el grafo no tiene un store asociado.
     if runtime.store is None:

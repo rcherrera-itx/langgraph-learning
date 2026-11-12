@@ -24,7 +24,7 @@ SUPPORTED_EMPLOYEES = {"EMP-001", "EMP-002"}
 
 @tool
 def lookup_ticket(ticket_id: str) -> str:
-    """Consulta el estado de un ticket previamente autorizado."""
+    """Devuelve el estado de un ticket; el grafo comprueba antes del permiso."""
 
     # Hace visible cuando se ejecuta realmente la herramienta.
     print("Ejecutando lookup_ticket.")
