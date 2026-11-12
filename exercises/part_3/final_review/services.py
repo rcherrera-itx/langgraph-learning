@@ -4,7 +4,7 @@ Dependencias:
     sqlite3: Registra los restablecimientos para evitar duplicados.
     closing: Cierra la conexión SQLite cuando termina la operación.
     tool: Convierte la consulta de tickets en una herramienta.
-    DATA_DIR: INdica dónde guardar los datos persistentes.
+    DATA_DIR: Indica dónde guardar los datos persistentes.
 """
 
 import sqlite3
@@ -96,7 +96,7 @@ def reset_password(employee_id: str, request_id: str) -> str:
     if not isinstance(request_id, str) or not request_id.strip():
         raise ValueError("El restablecimiento requiere un request_id válido.")
 
-    # Prepara la misma carpeta de datos usadoa para las demás persistencias.
+    # Prepara la misma carpeta de datos usada para las demás persistencias.
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # Separa el registro de acciones del historial y de los perfiles.
@@ -145,5 +145,5 @@ def reset_password(employee_id: str, request_id: str) -> str:
     if was_created:
         print("Ejecutando reset_password.")
 
-    # El registro siempre existe: esta operación la cre+o o lo encontró.
+    # El registro siempre existe: esta operación la creó o lo encontró.
     return row[0]
