@@ -105,42 +105,41 @@ def reset_password(employee_id: str, request_id: str) -> str:
     # En esta simulación, registrar este resultado constituye la acción.
     result = f"Restablecimiento simulado para {employee_id}"
 
-    with closing(sqlite3.connect(str(database_path), timeout=30)) as connection:
+    with (closing(sqlite3.connect(str(database_path), timeout=30)) as connection, connection):
         # Confirma la nueva operación al salir o revierte la escritura si falla.
-        with connection:
-            # La pareja empleado/solicitud identifica una única acción.
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS reset_operations(
-                    employee_id TEXT NOT NULL,
-                    request_id TEXT NOT NULL,
-                    result TEXT NOT NULL,
-                    PRIMARY KEY (employee_id, request_id)
-                )
-                """
+        # La pareja empleado/solicitud identifica una única acción.
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reset_operations(
+                employee_id TEXT NOT NULL,
+                request_id TEXT NOT NULL,
+                result TEXT NOT NULL,
+                PRIMARY KEY (employee_id, request_id)
             )
+            """
+        )
 
-            # La clave primaria impide registrar dos veces la misma acción.
-            cursor = connection.execute(
-                """
-                INSERT OR IGNORE INTO reset_operations
-                    (employee_id, request_id, result)
-                VALUES (?, ?, ?)
-                """,
-                (employee_id, request_id, result),
-            )
+        # La clave primaria impide registrar dos veces la misma acción.
+        cursor = connection.execute(
+            """
+            INSERT OR IGNORE INTO reset_operations
+                (employee_id, request_id, result)
+            VALUES (?, ?, ?)
+            """,
+            (employee_id, request_id, result),
+        )
 
-            # Distingue la primera ejecución de un reintento de la misma clave.
-            was_created = cursor.rowcount == 1
+        # Distingue la primera ejecución de un reintento de la misma clave.
+        was_created = cursor.rowcount == 1
 
-            # Recupera el resultado registrado, sea nuevo o anterior.
-            row = connection.execute(
-                """
-                SELECT result FROM reset_operations
-                WHERE employee_id = ? AND request_id = ?
-                """,
-                (employee_id, request_id)
-            ).fetchone()
+        # Recupera el resultado registrado, sea nuevo o anterior.
+        row = connection.execute(
+            """
+            SELECT result FROM reset_operations
+            WHERE employee_id = ? AND request_id = ?
+            """,
+            (employee_id, request_id),
+        ).fetchone()
 
     # Informa únicamente cuando se añadió una operación nueva a SQLite.
     if was_created:
