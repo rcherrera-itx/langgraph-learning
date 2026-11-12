@@ -303,7 +303,7 @@ def run_chat(graph) -> None:
         result = stream_turn(graph, graph_input, config)
 
         if result is None:
-            print("La acción no se ejecutó. Sesión terminada.")
+            print("La revisión permanece pendiente. Sesión terminada.")
             return
 
         # Marca que la conversación actual ya tiene estado en el checkpointer.

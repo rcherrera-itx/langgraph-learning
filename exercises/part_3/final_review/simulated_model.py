@@ -21,12 +21,12 @@ class SimulatedModel:
             tool_result = str(last_message.content)
 
             # reconoce la acción por el identificador de su llamada.
-            is_passwod_reset = last_message.tool_call_id.startswith("call_reset_")
+            is_password_reset = last_message.tool_call_id.startswith("call_reset_")
 
             # Comunica una denegación de un restablecimiento.
-            if tool_result.startswith("DENIED") and is_passwod_reset:
+            if tool_result.startswith("DENIED") and is_password_reset:
                 return AIMessage(
-                    content="Solicitud denegada; no se reestableció la contraseña."
+                    content="Solicitud denegada; no se restableció la contraseña."
                 )
 
             # Comunica una denegación sin presentar datos del ticket.
@@ -34,7 +34,7 @@ class SimulatedModel:
                 return AIMessage(content="No tienes permiso para consultar ese ticket.")
 
             # Comunica el resultado de un restablecimiento aprobado.
-            if is_passwod_reset:
+            if is_password_reset:
                 return AIMessage(content=f"Resultado: {tool_result}")
 
             # Comunica el resultado de una consulta autorizada.
@@ -75,7 +75,7 @@ class SimulatedModel:
                 return AIMessage(content=f"Tu laptop es una {laptop_model}")
 
             # Responde que no existe un modelo registrado para el usuario.
-            return AIMessage(content="No tengo registrado to modelo de laptop.")
+            return AIMessage(content="No tengo registrado tu modelo de laptop.")
 
         if normalized_request.startswith("mi laptop es una "):
             

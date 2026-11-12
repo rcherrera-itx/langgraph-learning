@@ -69,7 +69,7 @@ def make_specialist(reply: str) -> Callable[[ConversationState], dict]:
     return specialist
 
 
-def make_it_agent(model: SimulatedModel) -> callable[[ConversationState], dict]:
+def make_it_agent(model: SimulatedModel) -> Callable[[ConversationState], dict]:
     """Crea el nodo de TI utilizando el modelo simulado recibido."""
 
     def it_agent(state: ConversationState) -> dict:
@@ -85,7 +85,7 @@ def make_it_agent(model: SimulatedModel) -> callable[[ConversationState], dict]:
     return it_agent
 
 
-def route_after_it(state: ConversationState) -> Literal["authorize", "finish"]:
+def route_after_it(state: ConversationState) -> Literal["authorize", "review_reset" ,"finish"]:
     """Decide si IT pidió una herramienta o terminó de responder."""
 
     # Consulta el mensaje que acaba de producir el modelo.
