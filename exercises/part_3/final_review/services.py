@@ -1,16 +1,18 @@
-"""Define datos simulados, permisos y acciones de la mesa de ayuda."""
+"""Define datos simulados, permisos y acciones de la mesa de ayuda.
 
-# Cierra la conexión SQLite cuando termina la operación.
+Dependencias:
+    sqlite3: Registra los restablecimientos para evitar duplicados.
+    closing: Cierra la conexión SQLite cuando termina la operación.
+    tool: Convierte la consulta de tickets en una herramienta.
+    DATA_DIR: INdica dónde guardar los datos persistentes.
+"""
+
+import sqlite3
 from contextlib import closing
 
-# Convierte una función en herramienta para el ToolNode de tickets.
 from langchain_core.tools import tool
 
-# Comparte con el chatbot la ubicación de sus archivos persistentes.
 from .persistence import DATA_DIR
-
-# Registra restablecimientos con una clave única que sobrevive a reinicios.
-import sqlite3
 
 # Define qué empleados pueden consultar cada ticket de la simulación.
 TICKET_ACCESS: dict[str, set[str]] = {"INC-4471": {"EMP-001"}}
