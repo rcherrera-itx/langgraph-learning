@@ -1,23 +1,25 @@
 """Define datos simulados, permisos y acciones de la mesa de ayuda."""
 
+# Cierra la conexión SQLite cuando termina la operación.
+from contextlib import closing
+
+# Registra restablecimientos con una clave única que sobrevive a reinicios.
+import sqlite3
+
 # Convierte una función en herramienta para el ToolNode de tickets.
 from langchain_core.tools import tool
 
+# Comparte con el chatbot la ubicación de sus archivos persistentes.
+from .persistence import DATA_DIR
+
 # Define qué empleados pueden consultar cada ticket de la simulación.
-TICKET_ACCESS: dict[str, set[str]] = {
-    "INC-4471": {"EMP-001"}
-}
+TICKET_ACCESS: dict[str, set[str]] = {"INC-4471": {"EMP-001"}}
 
 # Guarda el resultado que devuelve la consulta de cada ticket.
-TICKET_STATUS: dict[str, str] = {
-    "INC-4471": "Abierto; asignado al equipo de redes."
-}
+TICKET_STATUS: dict[str, str] = {"INC-4471": "Abierto; asignado al equipo de redes."}
 
 # Define los empleados a quienes puede aplicarse la acción simulada.
 SUPPORTED_EMPLOYEES = {"EMP-001", "EMP-002"}
-
-# Representa las acciones de restablecimiento ya realizados en este proceso.
-RESET_RESULTS: dict[tuple[str, str], str] = {}
 
 
 @tool
@@ -90,23 +92,57 @@ def reset_password(employee_id: str, request_id: str) -> str:
 
     # Exige una clave que permita reconocer la misma solicitud en un reintento.
     if not isinstance(request_id, str) or not request_id.strip():
-        raise ValueError("El restablecimiento requiere un request_id válido")
+        raise ValueError("El restablecimiento requiere un request_id válido.")
 
-    # Identifica esta operación sin confundirla con otras del mismo empleado.
-    operational_key = (employee_id, request_id)
+    # Prepara la misma carpeta de datos usadoa para las demás persistencias.
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Recupera el resultado anterior si esta operación ya fue procesada.
-    if operational_key in RESET_RESULTS:
-        return RESET_RESULTS[operational_key]
+    # Separa el registro de acciones del historial y de los perfiles.
+    database_path = DATA_DIR / "reset_operations.sqlite"
 
-    # Produce el resultado de la acción simulada.
+    # En esta simulación, registrar este resultado constituye la acción.
     result = f"Restablecimiento simulado para {employee_id}"
 
-    # Registra la operación antes de devolver su resultado.
-    RESET_RESULTS[operational_key] = result
+    with closing(sqlite3.connect(str(database_path), timeout=30)) as connection:
+        # Confirma la nueva operación al salir o revierte la escritura si falla.
+        with connection:
+            # La pareja empleado/solicitud identifica una única acción.
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS reset_operations(
+                    employee_id TEXT NOT NULL,
+                    request_id TEXT NOT NULL,
+                    result TEXT NOT NULL,
+                    PRIMARY KEY (employee_id, request_id)
+                )
+                """
+            )
 
-    # Hace visible que la acción se realizó por primera vez.
-    print("Ejecutando reset_password.")
+            # La clave primaria impide registrar dos veces la misma acción.
+            cursor = connection.execute(
+                """
+                INSERT OR IGNORE INTO reset_operations
+                    (employee_id, request_id, result)
+                VALUES (?, ?, ?)
+                """,
+                (employee_id, request_id, result),
+            )
 
-    # Entrega el resultado a quien solicitó la acción.
-    return result
+            # Distingue la primera ejecución de un reintento de la misma clave.
+            was_created = cursor.rowcount == 1
+
+            # Recupera el resultado registrado, sea nuevo o anterior.
+            row = connection.execute(
+                """
+                SELECT result FROM reset_operations
+                WHERE employee_id = ? AND request_id = ?
+                """,
+                (employee_id, request_id)
+            ).fetchone()
+
+    # Informa únicamente cuando se añadió una operación nueva a SQLite.
+    if was_created:
+        print("Ejecutando reset_password.")
+
+    # El registro siempre existe: esta operación la cre+o o lo encontró.
+    return row[0]

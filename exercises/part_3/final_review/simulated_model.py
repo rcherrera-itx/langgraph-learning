@@ -75,7 +75,7 @@ class SimulatedModel:
                 return AIMessage(content=f"Tu laptop es una {laptop_model}")
 
             # Responde que no existe un modelo registrado para el usuario.
-            return AIMessage(content="No tengo registrtrado to modelo de laptop.")
+            return AIMessage(content="No tengo registrado to modelo de laptop.")
 
         if normalized_request.startswith("mi laptop es una "):
             
