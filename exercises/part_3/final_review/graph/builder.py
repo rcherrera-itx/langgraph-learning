@@ -7,10 +7,10 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
 # Importa los nodos que revisan y ejecutan restablecimientos.
-from .approval import approval_gate, execute_reset
+from ..nodes.approval import approval_gate, execute_reset
 
 # Importa los nodos y las funciones que deciden las rutas.
-from .nodes import (
+from ..nodes.support import (
     authorize_ticket,
     classify,
     deny_ticket,
@@ -22,16 +22,16 @@ from .nodes import (
 )
 
 # Importa los nodos que cargan y guardan el perfil del empleado.
-from .profiles import load_profile, save_profile
+from ..profiles.employee import load_profile, save_profile
 
 # Importa la herramienta que consulta el estado de un ticket.
-from .services import lookup_ticket
+from ..services.tickets import lookup_ticket
 
 # Importa el modelo siimulado que produce solicitudes y respuestas.
-from .simulated_model import SimulatedModel
+from ..models.simulated import SimulatedModel
 
 # Importa la definición de los campos que comparten los nodos.
-from .state import ConversationState
+from ..state.conversation import ConversationState
 
 
 def build_graph(checkpointer=None, store=None):
