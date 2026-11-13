@@ -10,7 +10,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.types import Command, interrupt
 
 # Ejecuta la acción simulada con protección frente a reintentos.
-from .services import reset_password
+from .reset_service import reset_password
 
 # Describe los datos disponibles durante la conversación.
 from .state import ConversationState
