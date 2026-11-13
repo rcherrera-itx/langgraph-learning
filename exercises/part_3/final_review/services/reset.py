@@ -9,7 +9,7 @@ Dependencias:
 import sqlite3
 from contextlib import closing
 
-from .persistence import DATA_DIR
+from ..persistence.storage import DATA_DIR
 
 # Define los empleados a quienes puede aplicarse la acción simulada.
 SUPPORTED_EMPLOYEES = {"EMP-001", "EMP-002"}
