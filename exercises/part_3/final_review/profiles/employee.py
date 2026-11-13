@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.runtime import Runtime
 
 # Describe los campos del estado que reciben los nodos.
-from .state import ConversationState
+from ..state.conversation import ConversationState
 
 
 def profile_namespace(employee_id: str) -> tuple[str, str]:
