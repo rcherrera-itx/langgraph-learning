@@ -15,8 +15,8 @@ from uuid import uuid4
 from langchain_core.messages import HumanMessage
 from langgraph.types import Command
 
-from .graph import build_graph
-from .persistence import open_storage
+from .graph.builder import build_graph
+from .persistence.storage import open_storage
 from .turns import read_review_decision, stream_turn
 
 # Define los usuario disponibles en esta simulación.
