@@ -15,7 +15,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.store.sqlite import SqliteStore
 
 # Coloca los archivos de datos junto a los módulos del chatbot.
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 @contextmanager
 def open_storage() -> Iterator[tuple[SqliteSaver, SqliteStore]]:
