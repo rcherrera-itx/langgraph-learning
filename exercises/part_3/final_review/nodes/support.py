@@ -10,13 +10,13 @@ from typing import Literal
 from langchain_core.messages import AIMessage, ToolMessage
 
 # Importa la política de accesso definida por la aplicación.
-from .services import authorize_ticket_requests
+from ..services.tickets import authorize_ticket_requests
 
 # Importa el modelo simulado que redacta las respuestas de IT.
-from .simulated_model import SimulatedModel
+from ..models.simulated import SimulatedModel
 
 # Importa los campos compartidos durante la ejecución del grafo.
-from .state import ConversationState
+from ..state.conversation import ConversationState
 
 
 def classify(state: ConversationState) -> dict:

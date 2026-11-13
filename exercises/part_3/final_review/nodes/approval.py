@@ -10,10 +10,10 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.types import Command, interrupt
 
 # Ejecuta la acción simulada con protección frente a reintentos.
-from .reset_service import reset_password
+from ..services.reset import reset_password
 
 # Describe los datos disponibles durante la conversación.
-from .state import ConversationState
+from ..state.conversation import ConversationState
 
 
 def get_reset_call(state: ConversationState) -> dict:
@@ -92,7 +92,7 @@ def approval_gate(
     )
 
 
-def execute_reset(state: ConversationState) -> dict:
+def execute_reset(state: ConversationState) -> Command[Literal["it_agent"]]:
     """Ejecuta la acción aprobada y devuelve su resultado al historial."""
 
     # Vuelve a comprobar qué llamada se aprobó.
