@@ -15,7 +15,7 @@ class SimulatedModel:
         # Examina el mensaje más reciente recibido por el modelo.
         last_message = messages[-1]
 
-        # Si lleg+o un resultado de herramienta, redacta la respuesta final.
+        # Si llegó un resultado de herramienta, redacta la respuesta final.
         if isinstance(last_message, ToolMessage):
             # Convierte el contenido de la herramienta en texto.
             tool_result = str(last_message.content)

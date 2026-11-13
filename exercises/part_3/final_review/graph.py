@@ -128,11 +128,8 @@ def build_graph(checkpointer=None, store=None):
     # Tras registrar la denegación, IT redacta la respuesta al usuario.
     builder.add_edge("deny_ticket", "it_agent")
 
-    # Permite a IT interpretar el resultado de un restablecimiento aprobado.
-    builder.add_edge("execute_reset", "it_agent")
-
-    # 'approval_gate' elige su destino mediante Command(goto=...)
-    # Por eso no se añade una arista estética desde este nodo.
+    # 'approval_gate' y 'execute_reset' eligen su destino mediante Command(goto=...)
+    # Por eso no se añaden aristas estéticas desde este nodo.
 
     # Compila el grafo con el checkpointer y el store recibido.
     return builder.compile(checkpointer=checkpointer, store=store)

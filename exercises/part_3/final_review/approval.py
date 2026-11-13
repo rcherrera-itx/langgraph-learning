@@ -107,5 +107,8 @@ def execute_reset(state: ConversationState) -> dict:
     # Relaciona el resultado con el AIMessage que solicitó la acción.
     response = ToolMessage(content=result, tool_call_id=call["id"])
 
-    # 'add_messages' incorporará este mensaje al historial del estado.
-    return {"messages": [response]}
+    # Guarda el resultado y pide a IT que redacte la respuesta final.
+    return Command(
+        update={"messages": [response]},
+        goto="it_agent"
+    )
