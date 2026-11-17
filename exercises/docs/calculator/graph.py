@@ -9,12 +9,28 @@ from langgraph.prebuilt import ToolNode
 from .tools import add_tool, divide_tool, multiply_tool
 
 
+def handle_tool_error(error: ValueError) -> str:
+    """Devuelve el mensaje de un error esperado de la herramienta."""
+    return str(error)
+
+
 def simulated_model(state: MessagesState) -> dict:
     """Simula una solicitud de operacion matemática y su respuesta posterior."""
     last_message = state["messages"][-1]
 
     # Después de ejecutar la herramienta, produce la respuesta final.
     if isinstance(last_message, ToolMessage):
+        if last_message.status == "error":
+            return {
+                "messages": [
+                    AIMessage(
+                        content=(
+                            f"No pude completar la operación: {last_message.content}"
+                        )
+                    )
+                ]
+            }
+
         return {
             "messages": [AIMessage(content=f"El resultado es {last_message.content}.")]
         }
@@ -92,7 +108,7 @@ def simulated_model(state: MessagesState) -> dict:
                         {
                             "name": "divide",
                             "args": {"a": 8, "b": 0},
-                            "id": "call_divide_001",
+                            "id": "call_divide_zero_001",
                             "type": "tool_call",
                         }
                     ],
@@ -126,7 +142,9 @@ def build_graph():
     builder.add_node("model", simulated_model)
     builder.add_node(
         "tools",
-        ToolNode([add_tool, multiply_tool, divide_tool], handle_tool_errors=False),
+        ToolNode(
+            [add_tool, multiply_tool, divide_tool], handle_tool_errors=handle_tool_error
+        ),
     )
 
     builder.add_edge(START, "model")
@@ -163,18 +181,18 @@ def main() -> None:
 
     print("Resultado de la división:", divide_result["messages"][-1].content)
 
-    # for message in result["messages"]:
-    #     message.pretty_print()
+    divide_zero_result = graph.invoke(
+        {"messages": [HumanMessage(content="Divide 8 y 0.")]},
+        config={"recursion_limit": 10},
+    )
 
-    try:
-        divide_result = graph.invoke(
-            {"messages": [HumanMessage(content="Divide 8 y 0.")]},
-            config={"recursion_limit": 10},
-        )
-    
-        print("Resultado de la división:", divide_result["messages"][-1].content)
-    except ValueError as error:
-        print("Error en la división:", error)
+    print("Resultado de la división:", divide_zero_result["messages"][-1].content)
+
+    for message in divide_zero_result["messages"]:
+        message.pretty_print()
+
+        if isinstance(message, ToolMessage):
+            print("Estado de la herramienta:", message.status)
 
 
 if __name__ == "__main__":
