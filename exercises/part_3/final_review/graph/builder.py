@@ -6,6 +6,9 @@ from langgraph.graph import END, START, StateGraph
 # Permite ejecutar herramientas solicitadas mediante 'tool_calls'
 from langgraph.prebuilt import ToolNode
 
+# Importa el modelo siimulado que produce solicitudes y respuestas.
+from ..models.simulated import SimulatedModel
+
 # Importa los nodos que revisan y ejecutan restablecimientos.
 from ..nodes.approval import approval_gate, execute_reset
 
@@ -26,9 +29,6 @@ from ..profiles.employee import load_profile, save_profile
 
 # Importa la herramienta que consulta el estado de un ticket.
 from ..services.tickets import lookup_ticket
-
-# Importa el modelo siimulado que produce solicitudes y respuestas.
-from ..models.simulated import SimulatedModel
 
 # Importa la definición de los campos que comparten los nodos.
 from ..state.conversation import ConversationState

@@ -9,11 +9,11 @@ from typing import Literal
 # representa respuestas del asistente y resultados de herramientas.
 from langchain_core.messages import AIMessage, ToolMessage
 
-# Importa la política de accesso definida por la aplicación.
-from ..services.tickets import authorize_ticket_requests
-
 # Importa el modelo simulado que redacta las respuestas de IT.
 from ..models.simulated import SimulatedModel
+
+# Importa la política de accesso definida por la aplicación.
+from ..services.tickets import authorize_ticket_requests
 
 # Importa los campos compartidos durante la ejecución del grafo.
 from ..state.conversation import ConversationState
