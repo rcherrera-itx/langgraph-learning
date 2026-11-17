@@ -10,7 +10,7 @@ from .tools import add_tool, divide_tool, multiply_tool
 
 
 def simulated_model(state: MessagesState) -> dict:
-    """Simula una solicitud de suma y su respuesta posterior."""
+    """Simula una solicitud de operacion matemática y su respuesta posterior."""
     last_message = state["messages"][-1]
 
     # Después de ejecutar la herramienta, produce la respuesta final.
@@ -59,7 +59,10 @@ def simulated_model(state: MessagesState) -> dict:
         }
 
     # Reconoce que se pide una división y prepara la llamada de la herramienta oara ejecutar la división.
-    if isinstance(last_message, HumanMessage) and last_message.content == "Divide 8 y 2.":
+    if (
+        isinstance(last_message, HumanMessage)
+        and last_message.content == "Divide 8 y 2."
+    ):
         return {
             "messages": [
                 AIMessage(
@@ -76,8 +79,33 @@ def simulated_model(state: MessagesState) -> dict:
             ]
         }
 
+    # Reconoce que se pide una división entre 0 y prepara la llamada de la herramienta oara ejecutar la división.
+    if (
+        isinstance(last_message, HumanMessage)
+        and last_message.content == "Divide 8 y 0."
+    ):
+        return {
+            "messages": [
+                AIMessage(
+                    content="",
+                    tool_calls=[
+                        {
+                            "name": "divide",
+                            "args": {"a": 8, "b": 0},
+                            "id": "call_divide_001",
+                            "type": "tool_call",
+                        }
+                    ],
+                )
+            ]
+        }
+
     return {
-        "messages": [AIMessage(content="Esta simulación solo reconoce: Suma 8 y 2.")]
+        "messages": [
+            AIMessage(
+                content="Esta simulación solo reconoce: 'Suma 8 y 2.', 'Multiplica 8 y 2.', 'Divide 8 y 2.' y 'Divide 8 y 0.'."
+            )
+        ]
     }
 
 
@@ -122,21 +150,31 @@ def main() -> None:
     print("Resultado de la suma:", add_result["messages"][-1].content)
 
     multiply_result = graph.invoke(
-            {"messages": [HumanMessage(content="Multiplica 8 y 2.")]},
-            config={"recursion_limit": 10},
-        )
-    
+        {"messages": [HumanMessage(content="Multiplica 8 y 2.")]},
+        config={"recursion_limit": 10},
+    )
+
     print("Resultado de la multiplicación:", multiply_result["messages"][-1].content)
 
     divide_result = graph.invoke(
-                {"messages": [HumanMessage(content="Divide 8 y 2.")]},
-                config={"recursion_limit": 10},
-            )
-        
+        {"messages": [HumanMessage(content="Divide 8 y 2.")]},
+        config={"recursion_limit": 10},
+    )
+
     print("Resultado de la división:", divide_result["messages"][-1].content)
 
     # for message in result["messages"]:
     #     message.pretty_print()
+
+    try:
+        divide_result = graph.invoke(
+            {"messages": [HumanMessage(content="Divide 8 y 0.")]},
+            config={"recursion_limit": 10},
+        )
+    
+        print("Resultado de la división:", divide_result["messages"][-1].content)
+    except ValueError as error:
+        print("Error en la división:", error)
 
 
 if __name__ == "__main__":
