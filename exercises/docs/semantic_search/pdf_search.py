@@ -25,10 +25,10 @@ def main() -> None:
     print("Fragmentos indexados:", len(document_ids))
 
     retriever = vector_store.as_retriever(
-        search_type="similarity", search_kwrgs={"k": 3}
+        search_type="similarity", search_kwargs={"k": 3}
     )
 
-    query = " How many distribution centers does Nike have?"
+    query = "How many distribution centers does Nike have?"
     results = retriever.invoke(query)
 
     print("\nConsulta:", query)
@@ -37,8 +37,8 @@ def main() -> None:
     for position, document in enumerate(results, start=1):
         print(f"\nResultado: {position}")
         print("Archivo:", Path(document.metadata["source"]).name)
-        print("Índice del fragmento:", document.metadata["page"])
-        print("Inicio de la página:", document.metadata["start_index"])
+        print("Índice del página:", document.metadata["page"])
+        print("Inicio del fragmento en la página:", document.metadata["start_index"])
         print("Contenido:")
         print(document.page_content)
 

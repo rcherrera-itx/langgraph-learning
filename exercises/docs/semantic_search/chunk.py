@@ -31,8 +31,8 @@ def main() -> None:
     for position, chunk in enumerate(chunks[:3], start=1):
         print(f"\nFragmento {position}")
         print("Caracteres:", len(chunk.page_content))
-        print("Índice del fragmento:", chunk.metadata["page"])
-        print("Inicio de la página:", chunk.metadata["start_index"])
+        print("Índice de la página:", chunk.metadata["page"])
+        print("Inicio del fragmento en la página:", chunk.metadata["start_index"])
         print("Origin:", chunk.metadata["source"])
         print("Contenido:")
         print(chunk.page_content)
