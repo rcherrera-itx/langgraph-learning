@@ -14,26 +14,25 @@ def load_pdf_pages(file_path: Path) -> list[Document]:
     return [
         Document(
             page_content=page.extract_text() or "",
-            metadata={
-                "source": str(file_path),
-                "page": page_index
-            },
+            metadata={"source": str(file_path), "page": page_index},
         )
         for page_index, page in enumerate(reader.pages)
     ]
 
 
-def main() -> None:
-    """Muestra una página para comprobar la extracción."""
-    file_path = (
-        Path(__file__).resolve().parent
-        / "data"
-        / "nke-10k-2023.pdf"
-    )
-
-    documents = load_pdf_pages(file_path)
+def get_pdf() -> list[Document]:
+    """Obtiene el PDF de la ruta indicada."""
+    file_path = Path(__file__).resolve().parent / "data" / "nke-10k-2023.pdf"
 
     print("Archivo:", file_path.name)
+
+    return load_pdf_pages(file_path)
+
+
+def main() -> None:
+    """Muestra una página para comprobar la extracción."""
+    documents = get_pdf()
+    
     print("Páginas cargadas:", len(documents))
 
     if documents:
@@ -46,5 +45,5 @@ def main() -> None:
         print(first_document.page_content[:500])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
