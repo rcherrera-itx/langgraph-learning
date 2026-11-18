@@ -2,9 +2,8 @@
 
 from pathlib import Path
 
-from pypdf import PdfReader
-
 from langchain_core.documents import Document
+from pypdf import PdfReader
 
 
 def load_pdf_pages(file_path: Path) -> list[Document]:

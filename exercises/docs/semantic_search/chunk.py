@@ -1,15 +1,13 @@
 """División de las páginas de un PDF en fragmentos."""
 
-from pathlib import Path
-
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from .pdf_loader import get_pdf
 
 
-def main() -> None:
-    """Carga las páginas y muestra los primeros fragmentos."""
-    pages = get_pdf()
+def split_pages(pages: list[Document]) -> list[Document]:
+    """Divide las páginas conservando sus metadatos."""
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -18,7 +16,14 @@ def main() -> None:
         add_start_index=True
     )
 
-    chunks = splitter.split_documents(pages)
+    return splitter.split_documents(pages)
+
+
+
+def main() -> None:
+    """Carga las páginas y muestra los primeros fragmentos."""
+    pages = get_pdf()
+    chunks = split_pages(pages)
 
     print("Páginas cargadas:", len(pages))
     print("Fragmentos generados:", len(chunks))
@@ -26,7 +31,7 @@ def main() -> None:
     for position, chunk in enumerate(chunks[:3], start=1):
         print(f"\nFragmento {position}")
         print("Caracteres:", len(chunk.page_content))
-        print("Índice de página:", chunk.metadata["page"])
+        print("Índice del fragmento:", chunk.metadata["page"])
         print("Inicio de la página:", chunk.metadata["start_index"])
         print("Origin:", chunk.metadata["source"])
         print("Contenido:")
