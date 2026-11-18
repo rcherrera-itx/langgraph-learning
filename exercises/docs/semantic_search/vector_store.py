@@ -32,6 +32,21 @@ def main() -> None:
         print("Origen:", document.metadata["source"])
         print("Sección:", document.metadata["section"])
 
+    retriever = vector_store.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 2},
+    )
+
+    # Recibe la consulta y devuelve una lista de documentos.
+    retrieved_documents = retriever.invoke(query)
+
+    print("\nDocumentos obtenidos mediante el retriever.")
+
+    for position, document in enumerate(retrieved_documents, start=1):
+        print(f"\nDocumento {position}")
+        print("Contenido:", document.page_content)
+        print("Origen:", document.metadata["source"])
+
 
 if __name__ == "__main__":
     main()
