@@ -20,14 +20,14 @@ def main() -> None:
 
     chunks = splitter.split_documents(pages)
 
-    print("Páginas cargadas:". len(pages))
+    print("Páginas cargadas:", len(pages))
     print("Fragmentos generados:", len(chunks))
 
     for position, chunk in enumerate(chunks[:3], start=1):
         print(f"\nFragmento {position}")
         print("Caracteres:", len(chunk.page_content))
         print("Índice de página:", chunk.metadata["page"])
-        print("Inicio de la página:", chunk.metadata["starts_index"])
+        print("Inicio de la página:", chunk.metadata["start_index"])
         print("Origin:", chunk.metadata["source"])
         print("Contenido:")
         print(chunk.page_content)
