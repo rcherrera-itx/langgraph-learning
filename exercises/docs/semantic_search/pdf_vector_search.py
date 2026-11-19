@@ -36,9 +36,10 @@ def main() -> None:
 
     print("\nConsulta:", query)
     print("Fragmentos recuperados:", len(results))
+    print("Dimensiones del fragmento:", query_vector)
 
     if not results:
-        print("No se encontraron fragmentos que cumplena el umbral.")
+        print("No se encontraron fragmentos para tu búsqueda.")
 
     for position, document in enumerate(results, start=1):
         print(f"\nResultado: {position}")
